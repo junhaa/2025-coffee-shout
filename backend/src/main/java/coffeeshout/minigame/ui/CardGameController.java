@@ -4,12 +4,14 @@ import coffeeshout.minigame.application.CardGameService;
 import coffeeshout.minigame.domain.MiniGameResult;
 import coffeeshout.minigame.domain.cardgame.CardGame;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class CardGameController {
@@ -24,7 +26,7 @@ public class CardGameController {
         final CardGame cardGame = cardGameService.getCardGame(roomId);
 
         messagingTemplate.convertAndSend("/topic/room/" + roomId + "/gameState",
-                MiniGameStateMessage.of(cardGame, roomId));
+                "성공");
     }
 
     @MessageMapping("/room/{roomId}/cardGame/select")

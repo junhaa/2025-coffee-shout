@@ -20,9 +20,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CardGameService {
@@ -44,9 +46,11 @@ public class CardGameService {
         timers.put(roomId, createTimer(cardGame, roomId));
 
         cardGames.put(roomId, cardGame);
+        log.info("게임 시작");
     }
 
     public void selectCard(Long roomId, String playerName, Integer cardIndex) {
+        log.info("카드 선택 = {}", playerName);
         final CardGame cardGame = cardGames.get(roomId);
         final Player player = cardGame.findPlayerByName(playerName);
 
