@@ -25,8 +25,16 @@ public class CardGameController {
 
         final CardGame cardGame = cardGameService.getCardGame(roomId);
 
+        CardGameStateMessage response = CardGameStateMessage.of(cardGame, roomId);
+
         messagingTemplate.convertAndSend("/topic/room/" + roomId + "/gameState",
-                "성공");
+                new TestDot("test1"));
+
+        messagingTemplate.convertAndSend("/topic/room/" + roomId + "/gameState",
+                new TestDot("test2"));
+
+        messagingTemplate.convertAndSend("/topic/room/" + roomId + "/gameState",
+                new TestDot("test3"));
     }
 
     @MessageMapping("/room/{roomId}/cardGame/select")
@@ -36,7 +44,7 @@ public class CardGameController {
         final CardGame cardGame = cardGameService.getCardGame(roomId);
 
         messagingTemplate.convertAndSend("/topic/room/" + roomId + "/gameState",
-                MiniGameStateMessage.of(cardGame, roomId));
+                CardGameStateMessage.of(cardGame, roomId));
 
         cardGameService.checkAndMoveRound(roomId);
     }

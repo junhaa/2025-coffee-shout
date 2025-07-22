@@ -3,10 +3,9 @@ package coffeeshout.minigame.application;
 import static org.springframework.util.Assert.state;
 
 import coffeeshout.minigame.domain.cardgame.CardGameRound;
-import coffeeshout.minigame.domain.cardgame.card.Card;
 import coffeeshout.minigame.domain.cardgame.card.CardGameDeckGenerator;
 import coffeeshout.minigame.ui.MiniGameRanksMessage;
-import coffeeshout.minigame.ui.MiniGameStateMessage;
+import coffeeshout.minigame.ui.CardGameStateMessage;
 import coffeeshout.room.domain.RoomFinder;
 import coffeeshout.minigame.domain.cardgame.CardGame;
 import coffeeshout.minigame.domain.cardgame.card.CardGameRandomDeckGenerator;
@@ -15,7 +14,6 @@ import coffeeshout.player.domain.Player;
 import coffeeshout.room.domain.Room;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -100,7 +98,7 @@ public class CardGameService {
     }
 
     private void sendCardGameState(CardGame cardGame, Long roomId) {
-        messagingTemplate.convertAndSend("/topic/room/" + roomId + "/gameState", MiniGameStateMessage.of(cardGame, roomId));
+        messagingTemplate.convertAndSend("/topic/room/" + roomId + "/gameState", CardGameStateMessage.of(cardGame, roomId));
     }
 
     private void sendCardGameResult(CardGame cardGame, Long roomId){

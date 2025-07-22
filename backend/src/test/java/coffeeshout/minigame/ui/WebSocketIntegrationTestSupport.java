@@ -1,9 +1,11 @@
 package coffeeshout.minigame.ui;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.StringMessageConverter;
+import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
@@ -24,15 +27,12 @@ import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 public abstract class WebSocketIntegrationTestSupport {
 
     static final int CONNECT_TIMEOUT_SECONDS = 1;
-    static final int RESPONSE_TIMEOUT_SECONDS = 5;
+    static final int DEFAULT_RESPONSE_TIMEOUT_SECONDS = 5;
     static final String WEBSOCKET_BASE_URL_FORMAT = "ws://localhost:%d/ws";
 
     @LocalServerPort
-    int port;
-    WebSocketStompClient stompClient;
-    String URL;
-    CompletableFuture<String> completableFuture;
-    StompSession session;
+    private int port;
+    private StompSession session;
 
     @BeforeEach
     void setUp() throws ExecutionException, InterruptedException, TimeoutException {
@@ -40,35 +40,91 @@ public abstract class WebSocketIntegrationTestSupport {
                 new WebSocketTransport(new StandardWebSocketClient())
         ));
 
-        stompClient = new WebSocketStompClient(sockJsClient);
-        stompClient.setMessageConverter(new StringMessageConverter());
-        URL = String.format(WEBSOCKET_BASE_URL_FORMAT, port);
-        completableFuture = new CompletableFuture<>();
+        WebSocketStompClient stompClient = new WebSocketStompClient(sockJsClient);
+        stompClient.setMessageConverter(new MappingJackson2MessageConverter());
+        String url = String.format(WEBSOCKET_BASE_URL_FORMAT, port);
         session = stompClient
-                .connectAsync(URL, new StompSessionHandlerAdapter() {})
+                .connectAsync(url, new StompSessionHandlerAdapter() {
+
+                            @Override
+                            public void handleTransportError(StompSession session, Throwable exception) {
+                                throw new RuntimeException(exception);
+                            }
+
+                            @Override
+                            public void handleException(
+                                    StompSession session,
+                                    StompCommand command,
+                                    StompHeaders headers,
+                                    byte[] payload,
+                                    Throwable exception
+                            ) {
+                                throw new RuntimeException(exception);
+                            }
+                        }
+                )
                 .get(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
-    protected void subscribe(String subscribeEndpoint) {
-        session.subscribe(subscribeEndpoint, new GenericStompFrameHandler());
+
+    protected <T> MessageCollector<T> subscribe(String subscribeEndpoint, Class<T> payloadClazz) {
+        MessageCollector<T> messageCollector = new MessageCollector<>();
+        session.subscribe(subscribeEndpoint, new MessageCollectorStompFrameHandler<>(messageCollector, payloadClazz));
+        return messageCollector;
     }
 
-    protected String send(String sendEndpoint, Object bodyMessage) throws ExecutionException, InterruptedException, TimeoutException {
+    protected void send(String sendEndpoint, Object bodyMessage) {
         session.send(String.format(sendEndpoint), bodyMessage);
-        return completableFuture.get(RESPONSE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
 
+    protected class MessageCollector<T> {
+        private final BlockingQueue<T> queue = new LinkedBlockingQueue<>();
 
-    class GenericStompFrameHandler implements StompFrameHandler {
+        private void add(T message) {
+            queue.add(message);
+        }
 
-        @Override
-        public Type getPayloadType(StompHeaders headers) {
-            return String.class;
+        protected T get() throws InterruptedException, TimeoutException {
+            return get(DEFAULT_RESPONSE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        }
+
+        protected T get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
+            T message = queue.poll(timeout, unit);
+            if (message == null) {
+                throw new TimeoutException("메시지 수신 대기 시간을 초과했습니다");
+            }
+            return message;
+        }
+
+        protected int size() {
+            return queue.size();
+        }
+
+        protected boolean isEmpty() {
+            return queue.isEmpty();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private class MessageCollectorStompFrameHandler<T> implements StompFrameHandler {
+
+        private final Type payloadType;
+        private final MessageCollector<T> messageCollector;
+
+        MessageCollectorStompFrameHandler(MessageCollector<T> messageCollector, Type payloadType) {
+            this.messageCollector = messageCollector;
+            this.payloadType = payloadType;
         }
 
         @Override
+        public Type getPayloadType(StompHeaders headers) {
+            return payloadType;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
         public void handleFrame(StompHeaders headers, Object payload) {
-            completableFuture.complete((String) payload);
+            messageCollector.add((T) payload);
         }
     }
 }

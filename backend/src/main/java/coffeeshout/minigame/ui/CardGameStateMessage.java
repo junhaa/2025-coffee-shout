@@ -1,26 +1,24 @@
 package coffeeshout.minigame.ui;
 
 import coffeeshout.minigame.domain.cardgame.CardGame;
-import coffeeshout.minigame.domain.cardgame.CardHand;
 import coffeeshout.minigame.domain.cardgame.card.Card;
 import coffeeshout.player.domain.Player;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
-public record MiniGameStateMessage(
+public record CardGameStateMessage(
         Long roomId,
         int currentRound,
         Map<Card, String> playerSelections,
         Boolean allSelected
 ) {
 
-    public static MiniGameStateMessage of(final CardGame cardGame, final Long roomId) {
+    public static CardGameStateMessage of(final CardGame cardGame, final Long roomId) {
 
         final Map<Card, String> playerSelections = generatePlayerSelections(cardGame);
-        return new MiniGameStateMessage(
+        return new CardGameStateMessage(
                 roomId,
                 cardGame.getRound().ordinal(),
                 playerSelections,
@@ -30,7 +28,6 @@ public record MiniGameStateMessage(
 
     private static Map<Card, String> generatePlayerSelections(CardGame cardGame) {
         Map<Card, String> result = new HashMap<>();
-        System.out.println(result);
         return result;
     }
 
