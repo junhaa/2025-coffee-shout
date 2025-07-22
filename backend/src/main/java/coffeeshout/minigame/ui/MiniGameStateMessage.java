@@ -29,10 +29,9 @@ public record MiniGameStateMessage(
     }
 
     private static Map<Card, String> generatePlayerSelections(CardGame cardGame) {
-        return cardGame.getDeck().stream().collect(Collectors.toMap(
-                card -> card,
-                card -> findCardHolderName(cardGame, card)
-        ));
+        Map<Card, String> result = new HashMap<>();
+        System.out.println(result);
+        return result;
     }
 
     private static String findCardHolderName(CardGame cardGame, Card card) {
