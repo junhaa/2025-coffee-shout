@@ -5,9 +5,8 @@
 
     <springProperty scope="context" name="LOG_LEVEL" source="logging.level.root"/>
     <springProperty scope="context" name="LOG_PATH" source="logging.file.path"/>
-
-    <property name="APP_LOG_FILE_NAME" value="app"/>
-    <property name="ERROR_LOG_FILE_NAME" value="error"/>
+    <springProperty scope="context" name="APP_LOG_FILE_NAME" source="logging.file.name.app"/>
+    <springProperty scope="context" name="ERROR_LOG_FILE_NAME" source="logging.file.name.error"/>
 
 
     <property name="CONSOLE_LOG_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss}]  %clr(%-5level) %clr(---){faint} %clr([%15.15thread]){faint} %clr(%-40.40logger{36}){cyan} %clr(:){faint} %msg %clr([%X{requestId}]){magenta}%n"/>

@@ -42,9 +42,10 @@ public class RoomRestController {
 
     @GetMapping("/check-joinCode")
     public ResponseEntity<JoinCodeExistResponse> checkJoinCode(@RequestParam String joinCode) {
-        final boolean exists = roomService.roomExists(joinCode);
-
-        return ResponseEntity.ok(JoinCodeExistResponse.from(exists));
+        throw new RuntimeException("Not Implemented");
+//        final boolean exists = roomService.roomExists(joinCode);
+//
+//        return ResponseEntity.ok(JoinCodeExistResponse.from(exists));
     }
 
     @GetMapping("/check-guestName")

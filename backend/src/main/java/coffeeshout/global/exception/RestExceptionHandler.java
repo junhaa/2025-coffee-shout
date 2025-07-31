@@ -4,11 +4,14 @@ import coffeeshout.global.exception.custom.InvalidArgumentException;
 import coffeeshout.global.exception.custom.InvalidStateException;
 import coffeeshout.global.exception.custom.NotExistElementException;
 import java.time.LocalDateTime;
+import lombok.extern.slf4j.Slf4j;
+import lombok.extern.slf4j.XSlf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 public class RestExceptionHandler {
 
@@ -29,6 +32,7 @@ public class RestExceptionHandler {
 
     @ExceptionHandler(InvalidArgumentException.class)
     public ProblemDetail handleInvalidArgumentException(InvalidArgumentException exception) {
+        log.warn("InvalidArgumentException: {}", exception.getMessage());
         return getProblemDetail(HttpStatus.BAD_REQUEST, exception, exception.getErrorCode());
     }
 
