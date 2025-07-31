@@ -1,1 +1,10 @@
-spring.application.value=coffee-shout
+spring:
+  application:
+    name: coffee-shout
+
+logging:
+  file:
+    path: /var/log/coffee-shout
+
+  level:
+    root: info
