@@ -7,3 +7,21 @@ logging:
   level:
     root: info
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  metrics:
+    export:
+      cloudwatch:
+        namespace: coffee-shout-dev
+        enabled: true
+        step: 60s
+
+cloud:
+  aws:
+    region:
+      static: ap-northeast-2
+    credentials:
+      instance-profile: true
