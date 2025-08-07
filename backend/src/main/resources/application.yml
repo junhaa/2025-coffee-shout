@@ -3,25 +3,30 @@ spring:
     name:
       coffee-shout
 
+
 logging:
   level:
-    root: info
+    org.springframework.boot.autoconfigure: DEBUG
+    io.micrometer.cloudwatch2: DEBUG
+    software.amazon.awssdk: DEBUG
+    software.amazon.awssdk.auth: DEBUG
+    software.amazon.awssdk.core.exception: DEBUG
+    root: INFO
+
+debug: true
+
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: "*"  # 모든 actuator 엔드포인트 노출 (테스트용)
   metrics:
     export:
       cloudwatch:
-        namespace: coffee-shout-dev
         enabled: true
-        step: 60s
+        namespace: coffee-shout-dev-test
+        step: 30s  # 더 짧은 간격으로 테스트
+        batch-size: 20
+        region: ap-northeast-2
 
-cloud:
-  aws:
-    region:
-      static: ap-northeast-2
-    credentials:
-      instance-profile: true

@@ -24,11 +24,12 @@ repositories {
 }
 
 dependencies {
+    implementation(platform("io.micrometer:micrometer-bom:1.15.2"))
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("io.micrometer:micrometer-registry-cloudwatch2:1.15.2")
+    implementation("io.micrometer:micrometer-registry-cloudwatch2")
     implementation("software.amazon.awssdk:cloudwatch")
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("com.h2database:h2")
