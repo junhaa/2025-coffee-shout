@@ -15,6 +15,7 @@ import coffeeshout.room.domain.roulette.Probability;
 import coffeeshout.room.domain.roulette.ProbabilityCalculator;
 import coffeeshout.room.domain.roulette.Roulette;
 import coffeeshout.room.domain.roulette.RoulettePicker;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -29,11 +30,11 @@ public class Room {
     private static final int MAXIMUM_GUEST_COUNT = 9;
     private static final int MINIMUM_GUEST_COUNT = 2;
 
-    private final JoinCode joinCode;
-    private final Players players;
-    private final Roulette roulette;
-    private final Queue<Playable> miniGames;
-    private final List<Playable> finishedGames;
+    private JoinCode joinCode;
+    private Players players;
+    private Roulette roulette;
+    private Queue<Playable> miniGames;
+    private List<Playable> finishedGames;
 
     private Player host;
     private RoomState roomState;
@@ -226,5 +227,37 @@ public class Room {
 
     public void assignQrCodeUrl(String qrCodeUrl) {
         joinCode.assignQrCodeUrl(qrCodeUrl);
+    }
+
+    // Redis 복원을 위한 정적 팩토리 메서드
+    public static Room restore(
+            JoinCode joinCode,
+            Player host,
+            RoomState roomState,
+            Players players,
+            Roulette roulette,
+            Queue<Playable> miniGames,
+            List<Playable> finishedGames
+    ) {
+        Room room = new Room();
+        room.joinCode = joinCode;
+        room.host = host;
+        room.roomState = roomState;
+        room.players = players;
+        room.roulette = roulette;
+        room.miniGames = miniGames;
+        room.finishedGames = finishedGames;
+        return room;
+    }
+
+    // Redis 직렬화를 위한 기본 생성자
+    private Room() {
+        this.miniGames = new LinkedList<>();
+        this.finishedGames = new ArrayList<>();
+    }
+
+    @JsonIgnore
+    public List<Playable> getFinishedGames() {
+        return Collections.unmodifiableList(finishedGames);
     }
 }

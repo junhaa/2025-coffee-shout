@@ -11,5 +11,7 @@ logging:
     coffeeshout: DEBUG
 
 room:
+  repository:
+    type: memory
   qr:
     prefix: https://coffee-shout.com/join/
